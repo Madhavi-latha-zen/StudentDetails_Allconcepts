@@ -1,14 +1,19 @@
-
-import './App.css'
-import Student_Details from './components/Student_Details'
+import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import StudentDetails from './components/Student_Details';
+import Student_Dashboard from './components/Student_Dashboard';
 
 function App() {
-
   return (
-    <div>
-      <Student_Details/>
-    </div>
-  )
+    <Router>
+      <div>
+        <Routes>
+          <Route path="/studentdetails" element={<StudentDetails />} />
+          <Route path='/dashboard' element={<Student_Dashboard/>}/>
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;

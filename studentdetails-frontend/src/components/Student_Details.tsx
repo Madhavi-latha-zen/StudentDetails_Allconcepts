@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
+import { useNavigate } from "react-router-dom";
 
 function Student_Details() {
   const [formData, setFormData] = useState({
@@ -26,13 +27,14 @@ function Student_Details() {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  const navigate = useNavigate();
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3006/addstudents", formData);
+      await axios.post("http://localhost:3000/addstudents", formData);
 
       alert("Data submitted successfully!");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error submitting data:", error);
       alert("An error occurred while submitting data.");
@@ -66,9 +68,11 @@ function Student_Details() {
             />
           </div>
           <RadioGroup
-            defaultValue="Male"
+            defaultValue={formData.gender}
             name="gender"
-            onChange={handleInputChange}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setFormData({ ...formData, gender: e.target.value })
+            }
           >
             <p className="ml-5">Gender</p>
             <div className="flex items-center space-x-2 ml-4 mt-2">

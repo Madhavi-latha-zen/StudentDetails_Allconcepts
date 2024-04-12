@@ -4,7 +4,7 @@ const cors = require("cors");
 const Student = require("./Student");
 
 const app = express();
-const PORT = 3006;
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -93,6 +93,7 @@ app.delete("/students/:id", async (req, res) => {
     if (!deletedStudent) {
       return res.status(404).json({ message: "Student not found" });
     }
+    console.log("Student deleted successfully");
     res.status(200).json({ message: "Student deleted successfully" });
   } catch (error) {
     console.error("Error deleting student:", error);
