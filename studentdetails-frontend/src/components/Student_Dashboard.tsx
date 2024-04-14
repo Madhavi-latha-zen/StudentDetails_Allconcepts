@@ -28,6 +28,8 @@ function Student_Dashboard() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [studentToDeleteId, setStudentToDeleteId] = useState("");
 
   useEffect(() => {
     axios
@@ -106,11 +108,7 @@ function Student_Dashboard() {
       });
   };
 
-  const handleInputChange = (
-    value: string,
-    id: string,
-    field: keyof Student
-  ) => {
+  const handleInput = (value: string, id: string, field: keyof Student) => {
     if (field !== "_id") {
       setStudents((prevStudents) =>
         prevStudents.map((student) =>
@@ -120,10 +118,29 @@ function Student_Dashboard() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  // const handleDelete = async (id: string) => {
+  //   try {
+  //     await axios.delete(`http://localhost:3000/students/${id}`);
+  //     console.log("Student deleted successfully");
+  //     setStudents((prevStudents) =>
+  //       prevStudents.filter((student) => student._id !== id)
+  //     );
+  //   } catch (error) {
+  //     console.error("Error deleting student:", error);
+  //   }
+  // };
+  const handleDelete = (id: string) => {
+    setShowConfirmation(true);
+    setStudentToDeleteId(id);
+  };
+  const handleConfirmation = async () => {
     try {
-      await axios.delete(`http://localhost:3000/students/${id}`);
+      await axios.delete(`http://localhost:3000/students/${studentToDeleteId}`);
       console.log("Student deleted successfully");
+      setStudents((prevStudents) =>
+        prevStudents.filter((student) => student._id !== studentToDeleteId)
+      );
+      setShowConfirmation(false);
     } catch (error) {
       console.error("Error deleting student:", error);
     }
@@ -135,6 +152,9 @@ function Student_Dashboard() {
         student._id === id ? { ...student, isEditing: false } : student
       )
     );
+  };
+  const Cancelbutton = () => {
+    setShowConfirmation(false);
   };
   return (
     <div className="container mx-auto">
@@ -272,11 +292,7 @@ function Student_Dashboard() {
                       type="text"
                       value={student.firstName}
                       onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          student._id,
-                          "firstName"
-                        )
+                        handleInput(e.target.value, student._id, "firstName")
                       }
                     />
                   ) : (
@@ -289,11 +305,7 @@ function Student_Dashboard() {
                       type="text"
                       value={student.lastName}
                       onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          student._id,
-                          "lastName"
-                        )
+                        handleInput(e.target.value, student._id, "lastName")
                       }
                     />
                   ) : (
@@ -306,7 +318,7 @@ function Student_Dashboard() {
                       type="text"
                       value={student.gender}
                       onChange={(e) =>
-                        handleInputChange(e.target.value, student._id, "gender")
+                        handleInput(e.target.value, student._id, "gender")
                       }
                     />
                   ) : (
@@ -319,11 +331,7 @@ function Student_Dashboard() {
                       type="text"
                       value={student.department}
                       onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          student._id,
-                          "department"
-                        )
+                        handleInput(e.target.value, student._id, "department")
                       }
                     />
                   ) : (
@@ -336,11 +344,7 @@ function Student_Dashboard() {
                       type="text"
                       value={student.address}
                       onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          student._id,
-                          "address"
-                        )
+                        handleInput(e.target.value, student._id, "address")
                       }
                     />
                   ) : (
@@ -378,6 +382,26 @@ function Student_Dashboard() {
                         src="public/delete.png"
                         alt=""
                       />
+                      {showConfirmation && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                          <div className="bg-white p-6 rounded-lg shadow-md">
+                            <p className="mb-4">
+                              Are you sure you want to delete this student?
+                            </p>
+                            <div className="flex justify-between">
+                              <Button
+                                className="bg-gray-200 hover:bg-gray-300 text-black font-bold py-2 px-4 ml-3 rounded"
+                                onClick={Cancelbutton}
+                              >
+                                Cancel
+                              </Button>
+                              <Button onClick={handleConfirmation}>
+                                Yes, Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </td>
