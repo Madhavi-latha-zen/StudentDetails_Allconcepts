@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -30,6 +31,7 @@ function Student_Dashboard() {
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [studentToDeleteId, setStudentToDeleteId] = useState("");
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
   useEffect(() => {
     axios
@@ -71,68 +73,12 @@ function Student_Dashboard() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = searchStudents.slice(indexOfFirstItem, indexOfLastItem);
 
-  const handleEdit = (id: string) => {
-    setStudents((prevStudents) =>
-      prevStudents.map((student) =>
-        student._id === id
-          ? { ...student, isEditing: !student.isEditing }
-          : student
-      )
-    );
-  };
-
-  const handleSave = (id: string) => {
-    const student = students.find((student) => student._id === id);
-    if (!student) {
-      console.error("Student not found for ID:", id);
-      return;
-    }
-
-    console.log("Saving student data:", student);
-
-    axios
-      .put(`http://localhost:3000/students/${id}`, student)
-      .then((response) => {
-        console.log("Student updated successfully:", response.data);
-        axios
-          .get("http://localhost:3000/students")
-          .then((response) => {
-            setStudents(response.data);
-          })
-          .catch((error) => {
-            console.error("Error fetching data:", error);
-          });
-      })
-      .catch((error) => {
-        console.error("Error updating student:", error);
-      });
-  };
-
-  const handleInput = (value: string, id: string, field: keyof Student) => {
-    if (field !== "_id") {
-      setStudents((prevStudents) =>
-        prevStudents.map((student) =>
-          student._id === id ? { ...student, [field]: value } : student
-        )
-      );
-    }
-  };
-
-  // const handleDelete = async (id: string) => {
-  //   try {
-  //     await axios.delete(`http://localhost:3000/students/${id}`);
-  //     console.log("Student deleted successfully");
-  //     setStudents((prevStudents) =>
-  //       prevStudents.filter((student) => student._id !== id)
-  //     );
-  //   } catch (error) {
-  //     console.error("Error deleting student:", error);
-  //   }
-  // };
   const handleDelete = (id: string) => {
+    console.log("Delete icon clicked for student with ID:", id);
     setShowConfirmation(true);
     setStudentToDeleteId(id);
   };
+
   const handleConfirmation = async () => {
     try {
       await axios.delete(`http://localhost:3000/students/${studentToDeleteId}`);
@@ -146,16 +92,40 @@ function Student_Dashboard() {
     }
   };
 
-  const handleCancel = (id: string) => {
-    setStudents((prevStudents) =>
-      prevStudents.map((student) =>
-        student._id === id ? { ...student, isEditing: false } : student
-      )
-    );
+  const handleEdit = (student: Student) => {
+    setEditingStudent(student);
   };
-  const Cancelbutton = () => {
-    setShowConfirmation(false);
+
+  const handleCancelEdit = () => {
+    setEditingStudent(null);
   };
+
+  const handleSaveEdit = async () => {
+    if (!editingStudent) {
+      return; // Exit early if editingStudent is null
+    }
+
+    try {
+      // Update the student data in the database
+      await axios.put(
+        `http://localhost:3000/students/${editingStudent._id}`,
+        editingStudent
+      );
+
+      // Update the student data in the local state
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student._id === editingStudent._id ? editingStudent : student
+        )
+      );
+
+      // Close the edit dialog
+      setEditingStudent(null);
+    } catch (error) {
+      console.error("Error saving student data:", error);
+    }
+  };
+
   return (
     <div className="container mx-auto">
       <h1 className="text-3xl font-bold mb-4 mt-6 text-center">
@@ -263,11 +233,11 @@ function Student_Dashboard() {
           </DropdownMenu>
         </div>
       </div>
+      <div className="flex mt-10">{/* Dropdown filters */}</div>
 
       <table className="table-auto border-collapse w-full">
         <thead>
           <tr className="bg-gray-200">
-            {/* <th className="border border-gray-400 px-4 py-2">ID</th> */}
             <th className="border border-gray-400 px-4 py-2">First Name</th>
             <th className="border border-gray-400 px-4 py-2">Last Name</th>
             <th className="border border-gray-400 px-4 py-2">Gender</th>
@@ -277,6 +247,7 @@ function Student_Dashboard() {
           </tr>
         </thead>
         <tbody>
+          {/* Table rows */}
           {searchStudents.length === 0 ? (
             <tr>
               <td colSpan={6} className="text-center py-4 text-red-500">
@@ -287,123 +258,35 @@ function Student_Dashboard() {
             currentItems.map((student) => (
               <tr key={student._id} className="border-b border-gray-400">
                 <td className="border border-gray-400 px-4 py-2">
-                  {student.isEditing ? (
-                    <input
-                      type="text"
-                      value={student.firstName}
-                      onChange={(e) =>
-                        handleInput(e.target.value, student._id, "firstName")
-                      }
-                    />
-                  ) : (
-                    student.firstName
-                  )}
+                  {student.firstName}
                 </td>
                 <td className="border border-gray-400 px-4 py-2">
-                  {student.isEditing ? (
-                    <input
-                      type="text"
-                      value={student.lastName}
-                      onChange={(e) =>
-                        handleInput(e.target.value, student._id, "lastName")
-                      }
-                    />
-                  ) : (
-                    student.lastName
-                  )}
+                  {student.lastName}
                 </td>
                 <td className="border border-gray-400 px-4 py-2">
-                  {student.isEditing ? (
-                    <input
-                      type="text"
-                      value={student.gender}
-                      onChange={(e) =>
-                        handleInput(e.target.value, student._id, "gender")
-                      }
-                    />
-                  ) : (
-                    student.gender
-                  )}
+                  {student.gender}
                 </td>
                 <td className="border border-gray-400 px-4 py-2">
-                  {student.isEditing ? (
-                    <input
-                      type="text"
-                      value={student.department}
-                      onChange={(e) =>
-                        handleInput(e.target.value, student._id, "department")
-                      }
-                    />
-                  ) : (
-                    student.department
-                  )}
+                  {student.department}
                 </td>
                 <td className="border border-gray-400 px-4 py-2">
-                  {student.isEditing ? (
-                    <input
-                      type="text"
-                      value={student.address}
-                      onChange={(e) =>
-                        handleInput(e.target.value, student._id, "address")
-                      }
-                    />
-                  ) : (
-                    student.address
-                  )}
+                  {student.address}
                 </td>
                 <td className="border border-gray-400 px-4 py-2">
-                  {student.isEditing ? (
-                    <div className="flex">
-                      <Button
-                        className="bg-green-200 hover:bg-green-300 ml-4 text-black font-bold py-2 px-4 rounded"
-                        onClick={() => handleSave(student._id)}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        className="bg-red-200 hover:bg-red-300 text-black font-bold py-2 px-4 ml-3 rounded"
-                        onClick={() => handleCancel(student._id)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex">
-                      <img
-                        className="w-[30px] h-[30px] mt-4 ml-7"
-                        onClick={() => handleEdit(student._id)}
-                        src="public/edit.png"
-                        alt=""
-                      />
-
-                      <img
-                        className="w-[30px] h-[30px] mt-4 ml-4"
-                        onClick={() => handleDelete(student._id)}
-                        src="public/delete.png"
-                        alt=""
-                      />
-                      {showConfirmation && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                          <div className="bg-white p-6 rounded-lg shadow-md">
-                            <p className="mb-4">
-                              Are you sure you want to delete this student?
-                            </p>
-                            <div className="flex justify-between">
-                              <Button
-                                className="bg-gray-200 hover:bg-gray-300 text-black font-bold py-2 px-4 ml-3 rounded"
-                                onClick={Cancelbutton}
-                              >
-                                Cancel
-                              </Button>
-                              <Button onClick={handleConfirmation}>
-                                Yes, Delete
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex">
+                    <img
+                      className="w-[30px] h-[30px] mt-4 ml-7 cursor-pointer"
+                      src="public/edit.png"
+                      alt=""
+                      onClick={() => handleEdit(student)}
+                    />
+                    <img
+                      className="w-[30px] h-[30px] mt-4 ml-4 cursor-pointer"
+                      src="public/delete.png"
+                      alt=""
+                      onClick={() => handleDelete(student._id)}
+                    />
+                  </div>
                 </td>
               </tr>
             ))
@@ -427,6 +310,115 @@ function Student_Dashboard() {
           Next
         </button>
       </div>
+
+      {editingStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <p className="mb-4 font-semibold text-lg">Edit Student</p>
+            <div className="border-2 border-gray p-10">
+              <div className="flex">
+                <h1 className="mt-3 ">firstname:</h1>
+                <Input
+                  type="text"
+                  value={editingStudent.firstName}
+                  className="ml-10"
+                  onChange={(e) =>
+                    setEditingStudent({
+                      ...editingStudent,
+                      firstName: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="flex">
+                <p className="mt-3">Lastname:</p>
+                <Input
+                  type="text"
+                  value={editingStudent.lastName}
+                  className="ml-10 mt-2"
+                  onChange={(e) =>
+                    setEditingStudent({
+                      ...editingStudent,
+                      lastName: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="flex">
+                <p className="mt-3">Gender:</p>
+                <Input
+                  type="text"
+                  value={editingStudent.gender}
+                  className="ml-14 mt-2"
+                  onChange={(e) =>
+                    setEditingStudent({
+                      ...editingStudent,
+                      gender: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="flex">
+                <p className="mt-3">Department:</p>
+                <Input
+                  type="text"
+                  value={editingStudent.department}
+                  className="ml-5 mt-2"
+                  onChange={(e) =>
+                    setEditingStudent({
+                      ...editingStudent,
+                      department: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="flex">
+                <p className="mt-3">Address:</p>
+                <Input
+                  type="text"
+                  value={editingStudent.address}
+                  className="ml-12 mt-2"
+                  onChange={(e) =>
+                    setEditingStudent({
+                      ...editingStudent,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between mt-4">
+              <Button
+                className="bg-gray-200 hover:bg-gray-300 text-black font-bold py-2 px-4 ml-0 rounded"
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit}>Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <p className="mb-4">
+              Are you sure you want to delete this student?
+            </p>
+            <div className="flex justify-between">
+              <Button
+                className="bg-gray-200 hover:bg-gray-300 text-black font-bold py-2 px-4 ml-3 rounded"
+                onClick={() => setShowConfirmation(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmation}>Yes, Delete</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
