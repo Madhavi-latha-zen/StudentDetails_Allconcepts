@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -236,7 +236,7 @@ function Student_Dashboard() {
       <div className="flex mt-10">{/* Dropdown filters */}</div>
 
       <table className="table-auto border-collapse w-full">
-        <thead>
+      <thead>
           <tr className="bg-gray-200">
             <th className="border border-gray-400 px-4 py-2">First Name</th>
             <th className="border border-gray-400 px-4 py-2">Last Name</th>
@@ -315,11 +315,10 @@ function Student_Dashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <p className="mb-4 font-semibold text-lg">Edit Student</p>
-            <div className="border-2 border-gray p-10">
+            <div className="border-2 border-gray p-10" >
               <div className="flex">
                 <h1 className="mt-3 ">firstname:</h1>
-                <Input
-                  type="text"
+                <Input type="text"
                   value={editingStudent.firstName}
                   className="ml-10"
                   onChange={(e) =>
