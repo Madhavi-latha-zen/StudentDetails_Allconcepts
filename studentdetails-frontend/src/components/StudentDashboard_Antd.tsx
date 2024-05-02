@@ -40,7 +40,7 @@ const StudentDashboardAntd = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/students")
+      .get("http://localhost:4000/students")
       .then((response) => {
         setStudents(response.data);
       })
@@ -56,7 +56,7 @@ const StudentDashboardAntd = () => {
   const handleEditSave = async (values: Partial<Student>) => {
     if (editingStudent) {
       try {
-        await axios.put(`http://localhost:3000/students/${editingStudent._id}`, values);
+        await axios.put(`http://localhost:4000/students/${editingStudent._id}`, values);
         setStudents((prevStudents) =>
           prevStudents.map((student) =>
             student._id === editingStudent._id ? { ...student, ...values } : student

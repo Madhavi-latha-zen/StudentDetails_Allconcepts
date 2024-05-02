@@ -19,17 +19,18 @@ function StudentDetails_Antd() {
   const navigate = useNavigate();
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submitting data:", formData); // Log the data being submitted
+    console.log("Submitting data:", formData);
+  
     try {
-      await axios.post("http://localhost:3000/addstudents", formData);
+      await axios.post("http://localhost:4000/students", formData);
       alert("Data submitted successfully!");
-      setTimeout(() => navigate("/Studentdashboard-antd"), 1000);
+      navigate("/Studentdashboard-antd"); // Redirect immediately after success
     } catch (error) {
       console.error("Error submitting data:", error);
       alert("An error occurred while submitting data.");
     }
   };
-
+  
   const handleRadioChange = (e: RadioChangeEvent) => {
     setFormData({ ...formData, gender: e.target.value });
   };
